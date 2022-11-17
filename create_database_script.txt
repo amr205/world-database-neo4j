@@ -1,0 +1,39 @@
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/amr205/world-database-neo4j/main/csv_data/countries.csv' AS line FIELDTERMINATOR ','
+MERGE (:Country {identifier: toInteger(line['id']), name: line['name'], iso3: line['iso3'], iso2: line['iso2'],
+numeric_code: line['numeric_code'],phone_code: line['phone_code'], currency: line['currency'] });
+
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/amr205/world-database-neo4j/main/csv_data/states.csv' AS line FIELDTERMINATOR ','
+MERGE (newNode:State {identifier: toInteger(line['id']), name: line['name'], state_code: line['state_code'], latitude: coalesce(line['latitude'], "unknown"), longitude: coalesce(line['longitude'], "unknown") })
+WITH newNode, line
+    MATCH (parentNode:Country {identifier: toInteger(line['country_id'])})
+    MERGE (newNode)-[:PART_OF]->(parentNode);
+
+:auto LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/amr205/world-database-neo4j/main/csv_data/cities1.csv' AS line CALL{
+WITH line
+MERGE (newNode:City {identifier: toInteger(line['id']), name: line['name'], latitude: coalesce(line['latitude'], "unknown"), longitude: coalesce(line['longitude'], "unknown") })
+WITH newNode, line
+MATCH (parentNode:State {identifier: toInteger(line['state_id'])})
+    MERGE (newNode)-[:PART_OF]->(parentNode)
+} IN TRANSACTIONS OF 500 ROWS;
+
+
+:auto LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/amr205/world-database-neo4j/main/csv_data/cities2.csv' AS line CALL{
+WITH line
+MERGE (newNode:City {identifier: toInteger(line['id']), name: line['name'], latitude: coalesce(line['latitude'], "unknown"), longitude: coalesce(line['longitude'], "unknown") })
+WITH newNode, line
+MATCH (parentNode:State {identifier: toInteger(line['state_id'])})
+    MERGE (newNode)-[:PART_OF]->(parentNode)
+} IN TRANSACTIONS OF 500 ROWS;
+
+:auto LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/amr205/world-database-neo4j/main/csv_data/cities3.csv' AS line CALL{
+WITH line
+MERGE (newNode:City {identifier: toInteger(line['id']), name: line['name'], latitude: coalesce(line['latitude'], "unknown"), longitude: coalesce(line['longitude'], "unknown") })
+WITH newNode, line
+MATCH (parentNode:State {identifier: toInteger(line['state_id'])})
+    MERGE (newNode)-[:PART_OF]->(parentNode)
+} IN TRANSACTIONS OF 500 ROWS;
+
+
+
+
+
